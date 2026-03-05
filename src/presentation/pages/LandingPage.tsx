@@ -209,7 +209,7 @@ export const LandingPage: React.FC = () => {
               อัปโหลดรูปภาพ ตั้งราคา และโพสต์ขายสินค้าของคุณได้ภายในไม่กี่นาที
             </p>
             <button 
-              onClick={() => navigate(user ? '/sell' : '/register')}
+              onClick={() => navigate(user ? '/sell' : '/login')}
               className="px-10 py-4 bg-white text-slate-900 rounded-full font-bold text-lg hover:bg-primary-50 transition-all duration-300 hover:scale-105 shadow-xl flex items-center justify-center gap-2 mx-auto"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
