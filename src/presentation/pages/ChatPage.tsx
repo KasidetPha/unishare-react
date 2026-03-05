@@ -68,7 +68,7 @@ export const ChatPage: React.FC = () => {
   // 3. WebSocket Setup
   useEffect(() => {
     if (!user) return;
-    const socket = new WebSocket(`ws://https://unishare-server.onrender.com/ws/${user.id}`);
+    const socket = new WebSocket(`wss://https://unishare-server.onrender.com/ws/${user.id}`);
     socketRef.current = socket;
 
     socket.onmessage = (event) => {
