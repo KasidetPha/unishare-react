@@ -73,7 +73,7 @@ export const LandingPage: React.FC = () => {
           <h1 className="text-6xl md:text-7xl lg:text-[5.5rem] font-black text-gray-900 tracking-tight leading-[1.1] mb-8 select-none">
             เปลี่ยนของในหอ <br className="hidden md:block"/>
             ให้กลายเป็น <br className="md:hidden"/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 relative inline-block">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 relative inline-block pb-2">
               เงินทุนหมุนเวียน
               <svg className="absolute w-full h-4 -bottom-1 left-0 text-pink-400/50" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" strokeLinecap="round"/></svg>
             </span>

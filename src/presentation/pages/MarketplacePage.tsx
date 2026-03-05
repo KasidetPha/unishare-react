@@ -212,21 +212,45 @@ export const MarketplacePage: React.FC = () => {
           ) : filteredAndSortedProducts.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {filteredAndSortedProducts.map(product => (
-                <div key={product.id} onClick={() => navigate(`/product/${product.id}`)} className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col h-full">
-                  <div className="relative aspect-square bg-gray-50 overflow-hidden">
-                    <img src={product.imageUrl} alt={product.name} className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${product.status === 'sold' ? 'grayscale opacity-60' : ''}`} onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300?text=No+Image'; }} />
-                    {product.status === 'sold' && <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[2px]"><span className="bg-red-500 text-white font-black px-4 py-2 rounded-xl text-lg transform -rotate-12 border-2 border-white shadow-lg">SOLD OUT</span></div>}
-                    <div className="absolute bottom-2 left-2 right-2 flex justify-between">
+                <div 
+                  key={product.id} 
+                  onClick={() => navigate(`/product/${product.id}`)} 
+                  // เพิ่ม relative และนำ overflow-hidden ออกจากตัวแม่ เพื่อให้ mask ข้างในทำงานได้ดีขึ้น
+                  className="relative bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col h-full transform-gpu z-0"
+                >
+                  {/* Div สำหรับวาดขอบบังทับ (Border Overlay) ป้องกันขอบเหลี่ยมโผล่ */}
+                  <div className="absolute inset-0 rounded-2xl border border-transparent group-hover:border-gray-100 pointer-events-none z-10 transition-colors"></div>
+
+                  <div className="relative aspect-square bg-gray-50 overflow-hidden rounded-t-2xl z-0 isolate" style={{ transform: 'translateZ(0)' }}>
+                    <img 
+                      src={product.imageUrl} 
+                      alt={product.name} 
+                      // ใส่ rounded-t-2xl ที่ตัวภาพโดยตรง เพื่อบังคับให้รูปมันโค้งตั้งแต่ต้น
+                      className={`w-full h-full object-cover rounded-t-2xl transition-transform duration-500 group-hover:scale-110 ${product.status === 'sold' ? 'grayscale opacity-60' : ''}`} 
+                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300?text=No+Image'; }} 
+                    />
+                    {product.status === 'sold' && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[2px] rounded-t-2xl z-10">
+                        <span className="bg-red-500 text-white font-black px-4 py-2 rounded-xl text-lg transform -rotate-12 border-2 border-white shadow-lg">
+                          SOLD OUT
+                        </span>
+                      </div>
+                    )}
+                    <div className="absolute bottom-2 left-2 right-2 flex justify-between z-10">
                        <span className="bg-white/90 backdrop-blur-sm text-primary-700 text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-sm truncate max-w-[80%] border border-primary-100/50">
                         {product.uni}
                       </span>
                     </div>
                   </div>
-                  <div className="p-4 flex flex-col flex-1">
-                    <h3 className="font-bold text-gray-800 text-sm md:text-base line-clamp-2 mb-1 group-hover:text-primary-600 transition-colors">{product.name}</h3>
+                  <div className="p-4 flex flex-col flex-1 bg-white rounded-b-2xl relative z-0">
+                    <h3 className="font-bold text-gray-800 text-sm md:text-base line-clamp-2 mb-1 group-hover:text-primary-600 transition-colors">
+                      {product.name}
+                    </h3>
                     <p className="text-xs text-gray-400 mb-3 font-medium">{product.condition}</p>
                     <div className="mt-auto flex items-end justify-between">
-                      <span className="text-lg md:text-xl font-black text-primary-600">฿{product.price.toLocaleString()}</span>
+                      <span className="text-lg md:text-xl font-black text-primary-600">
+                        ฿{product.price.toLocaleString()}
+                      </span>
                     </div>
                   </div>
                 </div>
