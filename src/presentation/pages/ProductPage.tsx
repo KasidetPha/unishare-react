@@ -72,7 +72,7 @@ export const ProductPage: React.FC = () => {
 
   const handleChatAndInquire = async () => {
     if (!user) {
-      Swal.fire('การแจ้งเตือน', 'กรุณาเข้าสู่ระบบก่อนทำการแชทครับ', 'info').then(() => navigate('/login'));
+      Swal.fire('การแจ้งเตือน', 'กรุณาเข้าสู่ระบบก่อนทำการแชท', 'info').then(() => navigate('/login'));
       return;
     }
 
@@ -90,7 +90,7 @@ export const ProductPage: React.FC = () => {
       confirmButtonColor: '#4f46e5',
       inputValidator: (value) => {
         if (!value) {
-          return 'กรุณาพิมพ์ข้อความก่อนส่งครับ';
+          return 'กรุณาพิมพ์ข้อความก่อนส่ง';
         }
       }
     });
@@ -119,7 +119,7 @@ export const ProductPage: React.FC = () => {
 
       } catch (error) {
         console.error("Failed to send message:", error);
-        Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถส่งข้อความได้ในขณะนี้ กรุณาลองใหม่ครับ', 'error');
+        Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถส่งข้อความได้ในขณะนี้ กรุณาลองใหม่', 'error');
       }
     }
   };
@@ -221,7 +221,7 @@ export const ProductPage: React.FC = () => {
           <div className="mb-8 flex-1">
             <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">รายละเอียดสินค้า</h3>
             <div className="p-4 bg-gray-50 rounded-2xl text-gray-600 text-sm leading-relaxed border border-gray-100 whitespace-pre-wrap">
-              {product.description || "ไม่ได้ระบุรายละเอียดเพิ่มเติม ผู้ซื้อสามารถแชทสอบถามผู้ขายได้โดยตรงครับ"}
+              {product.description || "ไม่ได้ระบุรายละเอียดเพิ่มเติม ผู้ซื้อสามารถแชทสอบถามผู้ขายได้โดยตรง"}
             </div>
           </div>
 

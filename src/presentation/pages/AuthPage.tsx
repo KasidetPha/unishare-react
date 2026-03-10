@@ -43,7 +43,7 @@ export const AuthPage: React.FC = () => {
       
       Swal.fire({
         icon: 'success',
-        title: 'ยินดีต้อนรับกลับครับ!',
+        title: 'ยินดีต้อนรับกลับ!',
         text: `สวัสดีคุณ ${res.data.user.name}`,
         timer: 2000,
         showConfirmButton: false
@@ -87,7 +87,7 @@ export const AuthPage: React.FC = () => {
       // 🟢 2. จัดการรูปภาพหลักฐาน
       if (accountType === 'alumni') {
         if (!docFile) {
-          Swal.fire('ข้อมูลไม่ครบ', 'กรุณาอัปโหลดรูปหลักฐานการศึกษาด้วยครับ', 'warning');
+          Swal.fire('ข้อมูลไม่ครบ', 'กรุณาอัปโหลดรูปหลักฐานการศึกษาด้วย', 'warning');
           setIsSubmitting(false);
           return;
         }
@@ -234,7 +234,15 @@ export const AuthPage: React.FC = () => {
                 <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="ชื่อ-นามสกุล" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all" required />
               </div>
               <div>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="อีเมลมหาวิทยาลัย" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all" required />
+                {/* 🟢 ให้คำใบ้เปลี่ยนไปตามประเภทบัญชีที่เลือก */}
+                <input 
+                  type="email" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  placeholder={accountType === 'alumni' ? "อีเมลทั่วไป (Gmail, Hotmail, ฯลฯ)" : "อีเมลมหาวิทยาลัย"} 
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all" 
+                  required 
+                />
               </div>
               
               <div className="relative">

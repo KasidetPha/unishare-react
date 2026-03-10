@@ -22,6 +22,7 @@ export const ProfilePage: React.FC = () => {
   const [editProdPrice, setEditProdPrice] = useState('');
   const [editProdCondition, setEditProdCondition] = useState('');
   const [editProdCategory, setEditProdCategory] = useState('');
+  const [editProdSubCategory, setEditProdSubCategory] = useState('appliance'); // 🟢 State หมวดหมู่ย่อยตอนแก้ไข
   const [editProdDesc, setEditProdDesc] = useState('');
   const [editProdImageFile, setEditProdImageFile] = useState<File | null>(null);
   const [editProdImagePreview, setEditProdImagePreview] = useState<string>('');
@@ -102,7 +103,7 @@ export const ProfilePage: React.FC = () => {
   };
 
   const handleSaveProfile = async () => {
-    if (!editName.trim()) { Swal.fire('แจ้งเตือน', 'กรุณากรอกชื่อด้วยครับ', 'warning'); return; }
+    if (!editName.trim()) { Swal.fire('แจ้งเตือน', 'กรุณากรอกชื่อด้วย', 'warning'); return; }
     try {
       Swal.fire({ title: 'กำลังบันทึกข้อมูล...', didOpen: () => Swal.showLoading() });
       await api.put(`/api/users/${user?.id}`, { name: editName });
@@ -124,8 +125,18 @@ export const ProfilePage: React.FC = () => {
     setEditingProduct(product);
     setEditProdName(product.name);
     setEditProdPrice(String(product.price));
-    setEditProdCondition(product.condition || 'สภาพดี (80%-90%)');
-    setEditProdCategory(product.category || 'other');
+    setEditProdCondition(product.condition || 'มือสองสภาพดี');
+    
+    // 🟢 เช็คว่าถ้าเป็นของใช้หอพัก ให้แยกคำมาใส่ State ย่อย
+    const cat = product.category || 'other';
+    if (cat.startsWith('dorm-')) {
+      setEditProdCategory('dorm');
+      setEditProdSubCategory(cat.replace('dorm-', ''));
+    } else {
+      setEditProdCategory(cat);
+      setEditProdSubCategory('appliance');
+    }
+
     setEditProdDesc(product.description || '');
     setEditProdImagePreview(product.imageUrl); 
     setEditProdImageFile(null); 
@@ -159,18 +170,20 @@ export const ProfilePage: React.FC = () => {
         finalImageUrl = uploadRes.data.url;
       }
 
+      const finalEditCategory = editProdCategory === 'dorm' ? `dorm-${editProdSubCategory}` : editProdCategory;
+
       await api.put(`/api/products/${editingProduct.id}`, {
         name: editProdName,
         price: Number(editProdPrice),
         condition: editProdCondition,
-        category: editProdCategory,
+        category: finalEditCategory,
         description: editProdDesc,
         image_url: finalImageUrl 
       });
 
       setMyProducts(prev => prev.map(p => p.id === editingProduct.id ? { 
         ...p, name: editProdName, price: Number(editProdPrice), 
-        condition: editProdCondition, category: editProdCategory, 
+        condition: editProdCondition, category: finalEditCategory, 
         description: editProdDesc, imageUrl: finalImageUrl 
       } : p));
 
@@ -295,7 +308,7 @@ export const ProfilePage: React.FC = () => {
             ) : (
               <div className="text-center py-16 bg-gray-50 rounded-[2rem] border-2 border-dashed border-gray-200">
                  <div className="text-5xl mb-4 text-gray-300 flex justify-center"><svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg></div>
-                 <p className="text-gray-500 mb-6 font-medium">คุณยังไม่ได้ลงขายสินค้าในระบบครับ</p>
+                 <p className="text-gray-500 mb-6 font-medium">คุณยังไม่ได้ลงขายสินค้าในระบบ</p>
                  <button onClick={() => navigate('/sell')} className="px-8 py-3 bg-primary-600 text-white font-bold rounded-xl shadow-lg hover:bg-primary-700 transition-all flex items-center justify-center gap-2 mx-auto">
                    ลงขายสินค้าชิ้นแรก <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
                  </button>
@@ -348,13 +361,26 @@ export const ProfilePage: React.FC = () => {
                    </select>
                 </div>
               </div>
+
+              {/* 🟢 หมวดหมู่ย่อย (แสดงเฉพาะตอนแก้ไขของใช้หอพัก) */}
+              {editProdCategory === 'dorm' && (
+                <div className="animate-[fadeIn_0.2s_ease-out]">
+                   <label className="text-sm font-bold text-gray-600 mb-1 block">ประเภทของใช้หอพัก</label>
+                   <select value={editProdSubCategory} onChange={e => setEditProdSubCategory(e.target.value)} className="w-full px-4 py-3 border border-blue-200 focus:border-blue-500 outline-none rounded-xl bg-blue-50/50 cursor-pointer">
+                     <option value="appliance">เครื่องใช้ไฟฟ้า (พัดลม, ตู้เย็น, ฯลฯ)</option>
+                     <option value="bedding">เครื่องนอน (หมอน, ผ้าห่ม, ฯลฯ)</option>
+                     <option value="furniture">เฟอร์นิเจอร์ (โต๊ะ, เก้าอี้, ฯลฯ)</option>
+                     <option value="general">ของใช้ทั่วไป (ไม้แขวนเสื้อ, ตะกร้า, ฯลฯ)</option>
+                   </select>
+                </div>
+              )}
+
               <div>
                  <label className="text-sm font-bold text-gray-600 mb-1 block">สภาพสินค้า</label>
                  <select value={editProdCondition} onChange={e => setEditProdCondition(e.target.value)} className="w-full px-4 py-3 border border-gray-200 focus:border-blue-400 outline-none rounded-xl bg-gray-50 cursor-pointer">
-                   <option value="มือหนึ่ง (ยังไม่แกะซีล)">มือหนึ่ง (ยังไม่แกะซีล)</option>
-                   <option value="สภาพดีเหมือนใหม่ (95%+)">สภาพดีเหมือนใหม่ (95%+)</option>
-                   <option value="สภาพดี (80%-90%)">สภาพดี (80%-90%)</option>
-                   <option value="มีตำหนิเล็กน้อย (ใช้งานได้ปกติ)">มีตำหนิเล็กน้อย (ใช้งานได้ปกติ)</option>
+                   <option value="มือสองสภาพสมบูรณ์">มือสองสภาพสมบูรณ์ (เหมือนใหม่)</option>
+                   <option value="มือสองสภาพดี">มือสองสภาพดี (80%-90%)</option>
+                   <option value="มือสองมีตำหนิ">มือสองมีตำหนิ (ใช้งานได้ปกติ)</option>
                  </select>
               </div>
               <div>

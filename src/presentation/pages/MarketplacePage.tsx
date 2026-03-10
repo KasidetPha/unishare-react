@@ -8,10 +8,14 @@ import api from '@/app/api/axiosInstance';
 const CATEGORIES = [
   { id: 'books', label: 'หนังสือ / ตำรา' },
   { id: 'electronics', label: 'อิเล็กทรอนิกส์' },
-  { id: 'dorm', label: 'ของใช้หอพัก' },
+  { id: 'dorm', label: 'ของใช้หอพัก (รวมทั้งหมด)' },
+  { id: 'dorm-appliance', label: 'เครื่องใช้ไฟฟ้า' },
+  { id: 'dorm-bedding', label: 'เครื่องนอน' },     
+  { id: 'dorm-furniture', label: 'เฟอร์นิเจอร์' },  
+  { id: 'dorm-general', label: 'ของใช้ทั่วไป' },    
   { id: 'fashion', label: 'เสื้อผ้า / แฟชั่น' },
   { id: 'sports', label: 'กีฬา / Hobbies' },
-  { id: 'other', label: 'อื่นๆ' },
+  { id: 'other', label: 'อื่นๆ' }
 ];
 
 interface FilterSidebarProps {
@@ -60,19 +64,39 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
     </div>
 
     <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
-      <label className="block text-sm font-bold text-gray-700 mb-3">หมวดหมู่</label>
-      <div className="space-y-3">
-        {CATEGORIES.map(cat => (
-          <label key={cat.id} className="flex items-center gap-3 cursor-pointer group">
-            <input 
-              type="checkbox" 
-              checked={selectedCategories.includes(cat.id)} 
-              onChange={() => toggleCategory(cat.id)} 
-              className="w-4 h-4 rounded text-primary-600 focus:ring-primary-500 accent-primary-600" 
-            />
-            <span className="text-sm text-gray-600 group-hover:text-primary-600 font-medium">{cat.label}</span>
-          </label>
-        ))}
+      <label className="block text-sm font-bold text-gray-700 mb-4">หมวดหมู่</label>
+      <div className="space-y-1.5"> {/* 🟢 ปรับลดระยะห่างให้ไอเทมย่อยดูเป็นกลุ่มเดียวกัน */}
+        {CATEGORIES.map(cat => {
+          // 🟢 เช็คว่าเป็นหมวดหมู่ย่อยหรือไม่
+          const isSub = cat.id.startsWith('dorm-');
+          
+          return (
+            <label 
+              key={cat.id} 
+              className={`flex items-center cursor-pointer group transition-all ${
+                isSub 
+                  ? 'ml-6 pl-3 py-1.5 border-l-2 border-gray-100 hover:border-primary-300 gap-2.5' 
+                  : 'gap-3 py-1.5'
+              }`}
+            >
+              <input 
+                type="checkbox" 
+                checked={selectedCategories.includes(cat.id)} 
+                onChange={() => toggleCategory(cat.id)} 
+                className={`rounded text-primary-600 focus:ring-primary-500 accent-primary-600 transition-all ${
+                  isSub ? 'w-3.5 h-3.5' : 'w-4 h-4' // หมวดหมู่ย่อยปรับ Checkbox ให้เล็กลงนิดนึง
+                }`} 
+              />
+              <span className={`font-medium transition-colors ${
+                isSub 
+                  ? 'text-sm text-gray-500 group-hover:text-primary-600' // หมวดหมู่ย่อยสีจะอ่อนกว่า
+                  : 'text-sm text-gray-700 group-hover:text-primary-600'
+              }`}>
+                {cat.label}
+              </span>
+            </label>
+          );
+        })}
       </div>
     </div>
 
@@ -125,20 +149,80 @@ export const MarketplacePage: React.FC = () => {
   }, []);
 
   const toggleCategory = (categoryId: string) => {
-    setSelectedCategories(prev => prev.includes(categoryId) ? prev.filter(c => c !== categoryId) : [...prev, categoryId]);
+    setSelectedCategories(prev => {
+      const isSelected = prev.includes(categoryId);
+      let nextSelected = [...prev];
+
+      // 🟢 กรณีที่ 1: กดที่ตัวแม่ "ของใช้หอพัก (รวมทั้งหมด)"
+      if (categoryId === 'dorm') {
+        const dormItems = ['dorm', 'dorm-appliance', 'dorm-bedding', 'dorm-furniture', 'dorm-general'];
+        if (isSelected) {
+          // ถ้าเอาตัวแม่ออก -> เอาตัวลูกออกทั้งหมด
+          nextSelected = nextSelected.filter(id => !dormItems.includes(id));
+        } else {
+          // ถ้าติ๊กตัวแม่ -> ติ๊กตัวลูกทั้งหมด
+          dormItems.forEach(id => {
+            if (!nextSelected.includes(id)) nextSelected.push(id);
+          });
+        }
+      } 
+      // 🟢 กรณีที่ 2: กดที่ตัวลูก (เช่น เครื่องใช้ไฟฟ้า, เครื่องนอน)
+      else if (categoryId.startsWith('dorm-')) {
+        if (isSelected) {
+          // ถ้าเอาตัวลูกออก 1 ตัว -> ต้องเอาติ๊กตัวแม่ออกด้วย
+          nextSelected = nextSelected.filter(id => id !== categoryId && id !== 'dorm');
+        } else {
+          nextSelected.push(categoryId);
+          // เช็คว่าถ้าผู้ใช้ไล่ติ๊กตัวลูกจนครบ 4 หมวดแล้ว -> ให้ติ๊กตัวแม่ด้วย
+          const allSubs = ['dorm-appliance', 'dorm-bedding', 'dorm-furniture', 'dorm-general'];
+          const isAllSubsSelected = allSubs.every(sub => nextSelected.includes(sub));
+          if (isAllSubsSelected && !nextSelected.includes('dorm')) {
+            nextSelected.push('dorm');
+          }
+        }
+      } 
+      // 🟢 กรณีที่ 3: หมวดหมู่อื่นๆ ทั่วไป (ทำงานแบบปกติ)
+      else {
+        if (isSelected) {
+          nextSelected = nextSelected.filter(id => id !== categoryId);
+        } else {
+          nextSelected.push(categoryId);
+        }
+      }
+
+      return nextSelected;
+    });
   };
 
   const handleResetFilters = () => {
     setSearchTerm(''); setUniFilter('all'); setSelectedCategories([]); setPriceRange({min: '', max: ''}); setSortBy('latest');
   };
 
+  // 🟢 ลอจิกการกรองที่อัปเดตใหม่
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...products];
-    if (searchTerm.trim() !== '') result = result.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
-    if (uniFilter === 'same' && user) result = result.filter(p => p.uni === user.uni);
-    if (selectedCategories.length > 0) result = result.filter(p => selectedCategories.includes(p.category));
     
-    const min = Number(priceRange.min); const max = Number(priceRange.max);
+    if (searchTerm.trim() !== '') {
+      result = result.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    }
+    
+    if (uniFilter === 'same' && user) {
+      result = result.filter(p => p.uni === user.uni);
+    }
+    
+    // 🟢 ถ้าเลือกหมวดหมู่ ให้เช็คถึงหมวดหมู่ย่อยด้วย
+    if (selectedCategories.length > 0) {
+      result = result.filter(p => selectedCategories.some(cat => {
+        // ถ้าเลือก dorm (รวมทั้งหมด) ให้ค้นหาทั้ง dorm เดี่ยวๆ และ dorm-xxx ทั้งหมด
+        if (cat === 'dorm') {
+          return p.category === 'dorm' || p.category?.startsWith('dorm-');
+        }
+        return p.category === cat;
+      }));
+    }
+    
+    const min = Number(priceRange.min); 
+    const max = Number(priceRange.max);
     if (min > 0) result = result.filter(p => p.price >= min);
     if (max > 0) result = result.filter(p => p.price <= max);
 
@@ -215,17 +299,14 @@ export const MarketplacePage: React.FC = () => {
                 <div 
                   key={product.id} 
                   onClick={() => navigate(`/product/${product.id}`)} 
-                  // เพิ่ม relative และนำ overflow-hidden ออกจากตัวแม่ เพื่อให้ mask ข้างในทำงานได้ดีขึ้น
                   className="relative bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col h-full transform-gpu z-0"
                 >
-                  {/* Div สำหรับวาดขอบบังทับ (Border Overlay) ป้องกันขอบเหลี่ยมโผล่ */}
                   <div className="absolute inset-0 rounded-2xl border border-transparent group-hover:border-gray-100 pointer-events-none z-10 transition-colors"></div>
 
                   <div className="relative aspect-square bg-gray-50 overflow-hidden rounded-t-2xl z-0 isolate" style={{ transform: 'translateZ(0)' }}>
                     <img 
                       src={product.imageUrl} 
                       alt={product.name} 
-                      // ใส่ rounded-t-2xl ที่ตัวภาพโดยตรง เพื่อบังคับให้รูปมันโค้งตั้งแต่ต้น
                       className={`w-full h-full object-cover rounded-t-2xl transition-transform duration-500 group-hover:scale-110 ${product.status === 'sold' ? 'grayscale opacity-60' : ''}`} 
                       onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300?text=No+Image'; }} 
                     />
@@ -260,7 +341,7 @@ export const MarketplacePage: React.FC = () => {
             <div className="text-center py-32 bg-white rounded-[2rem] border-2 border-dashed border-gray-200 shadow-sm">
               <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               <h3 className="text-2xl font-bold text-gray-800 mb-2">ไม่พบสินค้าที่คุณตามหา</h3>
-              <p className="text-gray-500 mb-6">ลองล้างตัวกรองหรือเปลี่ยนคำค้นหาดูนะครับ</p>
+              <p className="text-gray-500 mb-6">ลองล้างตัวกรองหรือเปลี่ยนคำค้นหาดูนะ</p>
               <button onClick={handleResetFilters} className="px-6 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">ล้างตัวกรองทั้งหมด</button>
             </div>
           )}
@@ -289,8 +370,8 @@ export const MarketplacePage: React.FC = () => {
               <div className="w-20 h-20 bg-primary-50 text-primary-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
                 <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" /></svg>
               </div>
-              <h2 className="text-2xl font-black text-gray-800">เข้าสู่ระบบก่อนนะครับ</h2>
-              <p className="text-gray-500 mt-2 text-sm leading-relaxed font-medium">ฟีเจอร์นี้สงวนสิทธิ์ไว้สำหรับ<br/>นักศึกษาที่เข้าสู่ระบบแล้วเท่านั้นครับ</p>
+              <h2 className="text-2xl font-black text-gray-800">เข้าสู่ระบบก่อนนะ</h2>
+              <p className="text-gray-500 mt-2 text-sm leading-relaxed font-medium">ฟีเจอร์นี้สงวนสิทธิ์ไว้สำหรับ<br/>นักศึกษาที่เข้าสู่ระบบแล้วเท่านั้น</p>
             </div>
             <div className="space-y-3">
               <button onClick={() => { setShowLoginModal(false); navigate('/login'); }} className="w-full py-4 bg-primary-600 text-white rounded-xl font-bold hover:bg-primary-700 shadow-lg shadow-primary-600/30 transition-all active:scale-95 text-lg">ไปหน้าเข้าสู่ระบบ</button>
