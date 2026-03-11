@@ -49,9 +49,8 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
+  const renderCustomizedLabel = ({ cx, cy, midAngle,  outerRadius, percent, name }: any) => {
     const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + (outerRadius + 30) * Math.cos(-midAngle * RADIAN);
     const y = cy + (outerRadius + 30) * Math.sin(-midAngle * RADIAN);
 
@@ -127,7 +126,7 @@ export const AdminDashboard: React.FC = () => {
                   label={renderCustomizedLabel}
                   labelLine={{ stroke: '#e5e7eb', strokeWidth: 1 }}
                 >
-                  {(stats?.chart_data || []).map((entry: any, index: number) => (
+                  {(stats?.chart_data || []).map((_: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

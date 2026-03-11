@@ -104,9 +104,8 @@ export const AdminPage: React.FC = () => {
   };
 
   // ฟังก์ชันสำหรับวาดข้อความบนกราฟโดนัท
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
+  const renderCustomizedLabel = ({ cx, cy, midAngle, outerRadius, percent, name }: any) => {
     const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + (outerRadius + 30) * Math.cos(-midAngle * RADIAN);
     const y = cy + (outerRadius + 30) * Math.sin(-midAngle * RADIAN);
 
