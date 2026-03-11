@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/app/providers/AuthProvider';
 import api from '@/app/api/axiosInstance'; 
+import Swal from 'sweetalert2'; // เพิ่ม Import SweetAlert2
 
 export const MainLayout: React.FC = () => {
   const navigate = useNavigate();
@@ -23,6 +24,34 @@ export const MainLayout: React.FC = () => {
     return () => { clearInterval(interval); window.removeEventListener('update-notifications', fetchNotificationCount); };
   }, [user]);
 
+  // ฟังก์ชันจัดการการออกจากระบบพร้อม SweetAlert
+  const handleLogout = () => {
+    Swal.fire({
+      title: 'ต้องการออกจากระบบ?',
+      text: "คุณแน่ใจหรือไม่ที่จะออกจากระบบ",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'ออกจากระบบ',
+      cancelButtonText: 'ยกเลิก',
+      reverseButtons: true
+    }).then((result) => {
+      if (result.isConfirmed) {
+        logout();
+        navigate('/');
+        
+        // (ตัวเลือกเสริม) แสดงแจ้งเตือนเมื่อออกจากระบบสำเร็จ
+        Swal.fire({
+          title: 'ออกจากระบบสำเร็จ',
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }
+    });
+  };
+
   return (
     <div className="h-full w-full font-thai">
       {/* --- Desktop & Mobile Top Navbar --- */}
@@ -35,13 +64,9 @@ export const MainLayout: React.FC = () => {
               <img 
                 src="/logo.png" 
                 alt="UniShare Logo" 
-                // ขยายความสูงขึ้นเป็น h-16 หรือ h-20 (แต่อาจจะทำให้ Navbar ดูหนาขึ้นนิดนึง)
-                // หรือใช้ scale-125 เพื่อขยายรูปให้ใหญ่ขึ้น 25% 
                 className="h-16 sm:h-20 scale-125 w-auto object-contain group-hover:scale-110 transition-transform"
               />
             </div>
-
-            
 
             <div className="flex items-center gap-2 flex-shrink-0">
               
@@ -66,7 +91,8 @@ export const MainLayout: React.FC = () => {
                     </div>
                     <span className="hidden lg:block text-sm font-bold text-gray-700">{user.name}</span>
                   </button>
-                  <button onClick={() => { logout(); navigate('/'); }} className="text-sm text-red-500 hover:text-red-700 font-bold px-2 transition-colors">ออก</button>
+                  {/* เปลี่ยน onClick มาเรียกใช้ฟังก์ชัน handleLogout แทน */}
+                  <button onClick={handleLogout} className="text-sm text-red-500 hover:text-red-700 font-bold px-2 transition-colors">ออก</button>
                 </div>
               ) : (
                 <button onClick={() => navigate('/login')} className="px-6 py-2.5 bg-slate-900 text-white rounded-full text-sm font-bold hover:bg-slate-800 shadow-md transition-all active:scale-95">เข้าสู่ระบบ</button>
@@ -81,7 +107,7 @@ export const MainLayout: React.FC = () => {
         <Outlet />
       </main>
 
-      {/* --- Mobile Bottom Nav (ปรับให้มีปุ่มตลาดสำหรับทุกคน) --- */}
+      {/* --- Mobile Bottom Nav --- */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50 flex py-2 px-1 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] pb-safe">
         <button onClick={() => navigate('/')} className="flex-1 flex flex-col items-center gap-1 text-gray-400 hover:text-primary-600 transition-colors">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
