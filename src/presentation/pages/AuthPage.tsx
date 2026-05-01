@@ -207,7 +207,7 @@ export const AuthPage: React.FC = () => {
                   type="button"
                   onClick={() => {
                     setEmail("test@example.com");
-                    setPassword("123456");
+                    setPassword("12345678");
                   }}
                   className="text-sm border border-gray-300 px-3 py-1 hover:bg-gray-100 transition text-red-500 rounded-md"
                 >
