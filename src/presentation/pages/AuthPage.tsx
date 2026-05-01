@@ -202,6 +202,18 @@ export const AuthPage: React.FC = () => {
               <button type="submit" disabled={isSubmitting} className="w-full py-3 bg-gradient-to-r from-primary-600 to-purple-600 text-white rounded-xl font-semibold hover:opacity-90 transition-all shadow-lg mt-4 disabled:opacity-50">
                 {isSubmitting ? 'กำลังตรวจสอบ...' : 'เข้าสู่ระบบ'}
               </button>
+              <div className="flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail("test@example.com");
+                    setPassword("123456");
+                  }}
+                  className="text-sm border border-gray-300 px-3 py-1 hover:bg-gray-100 transition text-red-500 rounded-md"
+                >
+                  ใช้บัญชีทดสอบ
+                </button>
+              </div>
             </form>
           ) : (
             /* Register Form */
